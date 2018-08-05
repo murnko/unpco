@@ -1,6 +1,11 @@
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
 import pandas as pd
+import numpy as np
+import cv2
+
+
+transformations = transforms.Compose([transforms.ToTensor()])
 
 class CustomDatasetFromImages(Dataset):
     def __init__(self, csv_path_or_df):
@@ -11,7 +16,7 @@ class CustomDatasetFromImages(Dataset):
             transform: pytorch transforms for transforms and tensor conversion
         """
         # Transforms
-        self.to_tensor = transforms.ToTensor()
+        self.to_transform = transformations
         # Read the csv file
         if isinstance(csv_path_or_df,str):
             self.data_info = pd.read_csv(csv_path_or_df, header=None)
@@ -19,10 +24,11 @@ class CustomDatasetFromImages(Dataset):
             self.data_info = csv_path_or_df
         # First column contains the image paths
         self.image_arr = np.asarray(self.data_info.iloc[:, 0])
-        # Second column is the labels
-        self.label_arr = np.asarray(self.data_info.iloc[:, 1])
+        # Second column contain files names
+        self.image_nam = np.asarray(self.data_info.iloc[:, 1])
         # Third column is for an operation indicator
-        self.operation_arr = np.asarray(self.data_info.iloc[:, 2])
+        self.label_arr = np.asarray(self.data_info.iloc[:, 2])
+        # Additional column can be added if needed
         # Calculate len
         self.data_len = len(self.data_info.index)
 
@@ -30,18 +36,18 @@ class CustomDatasetFromImages(Dataset):
         # Get image name from the pandas df
         single_image_name = self.image_arr[index]
         # Open image
-        img_as_img = Image.open(single_image_name)
+        img_as_img = cv2.imread(single_image_name._str)
 
         # Check if there is an operation
-        some_operation = self.operation_arr[index]
+        # some_operation = self.operation_arr[index]
         # If there is an operation
-        if some_operation:
+        # if some_operation:
             # Do some operation on image
             # ...
             # ...
-            pass
+            # pass
         # Transform image to tensor
-        img_as_tensor = self.to_tensor(img_as_img)
+        img_as_tensor = self.to_transform(img_as_img)
 
         # Get label(class) of the image based on the cropped pandas column
         single_image_label = self.label_arr[index]
