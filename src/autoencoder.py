@@ -163,7 +163,7 @@ def test(epoch):
             comparison = torch.cat([data[:n],
                                    recon_batch[:n]])
             save_image(comparison.data.cpu(),
-                       'snapshots/conv_vae/reconstruction_' + str(epoch) +
+                       '../snapshots/conv_vae/reconstruction_' + str(epoch) +
                        '.png', nrow=n)
 
     test_loss /= len(test_loader.dataset)
@@ -179,4 +179,4 @@ for epoch in range(1, args.epochs + 1):
             sample = sample.cuda()
         sample = model.decode(sample).cpu()
         save_image(sample.data.view(64, 3, 32, 32),
-                   'snapshots/conv_vae/sample_' + str(epoch) + '.png')
+                   '../snapshots/conv_vae/sample_' + str(epoch) + '.png')
