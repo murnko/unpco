@@ -6,10 +6,12 @@ import numpy as np
 import cv2
 
 
-transformations = transforms.Compose([transforms.Lambda(lambda x: crop_center(x)),
-                                      transforms.Lambda(lambda x: downsize(x)),
-                                      transforms.ToTensor()
-                                      ])
+# transformations = transforms.Compose([transforms.Lambda(lambda x: crop_center(x)),
+#                                       transforms.Lambda(lambda x: downsize(x)),
+#                                       transforms.ToTensor()
+#                                       ])
+
+transformations = transforms.Compose([transforms.ToTensor()])
 
 class CustomDatasetFromImages(Dataset):
     def __init__(self, csv_path_or_df):

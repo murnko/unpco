@@ -12,8 +12,8 @@ import torch
 
 
 parser = argparse.ArgumentParser(description='VAE Test')
-parser.add_argument('--batch-size', type=int, default=10, metavar='N',
-                    help='input batch size for training (default: 10)')
+parser.add_argument('--batch-size', type=int, default=128, metavar='N',
+                    help='input batch size for training (default: 128)')
 parser.add_argument('--epochs', type=int, default=10, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
@@ -31,23 +31,25 @@ parser.add_argument('--intermediate-size', type=int, default=128, metavar='N',
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
-path_bi_data = 'data/raw_data'
-
-
+path_bi_data = 'data/crop_data'
 df_bi_labeled = create_csv_data(path_bi_data, [2])
+print(df_bi_labeled.head())
 msk = np.random.rand(len(df_bi_labeled)) < 0.8
 train = df_bi_labeled[msk]
 test = df_bi_labeled[~msk]
+print(train['depth_2'].value_counts())
+print(test['depth_2'].value_counts())
+
 # print(df_bi_labeled.depth_2.value_counts())
 ds_train = CustomDatasetFromImages(train)
 ds_test = CustomDatasetFromImages(test)
 # crop_top(df_bi_labeled)
 
 train_loader = torch.utils.data.DataLoader(dataset=ds_train,
-                                                batch_size=5,
+                                                batch_size=args.batch_size,
                                                 shuffle=True)
 test_loader = torch.utils.data.DataLoader(dataset=ds_test,
-                                                batch_size=5,
+                                                batch_size=args.batch_size,
                                                 shuffle=True)
 
 
@@ -101,14 +103,14 @@ def test(epoch):
             comparison = torch.cat([data[:n],
                                     recon_batch[:n]])
             save_image(comparison.data.cpu(),
-                       '../snapshots/conv_vae/reconstruction_' + str(epoch) +
+                       'snapshots/conv_vae/reconstruction_' + str(epoch) +
                        '.png', nrow=n)
 
     test_loss /= len(test_loader.dataset)
     print('====> Test set loss: {:.4f}'.format(test_loss))
 
 
-model = VAE()
+model = VAE(args)
 if args.cuda:
     model.cuda()
 optimizer = optim.RMSprop(model.parameters(), lr=1e-3)
@@ -122,5 +124,5 @@ for epoch in range(1, args.epochs + 1):
             sample = sample.cuda()
         sample = model.decode(sample).cpu()
         save_image(sample.data.view(64, 3, 32, 32),
-                   '../snapshots/conv_vae/sample_' + str(epoch) + '.png')
+                   'snapshots/conv_vae/sample_' + str(epoch) + '.png')
 

@@ -27,27 +27,12 @@ parser.add_argument('--intermediate-size', type=int, default=128, metavar='N',
                     help='how big is linear around z')
 # parser.add_argument('--widen-factor', type=int, default=1, metavar='N',
 #                     help='how wide is the model')
-args = parser.parse_args()
-args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 
-# torch.manual_seed(args.seed)
-# if args.cuda:
-#     torch.cuda.manual_seed(args.seed)
-#
-#
-# kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-# train_loader = torch.utils.data.DataLoader(
-#     datasets.CIFAR10('../data', train=True, download=True,
-#                      transform=transforms.ToTensor()),
-#     batch_size=args.batch_size, shuffle=True, **kwargs)
-# test_loader = torch.utils.data.DataLoader(
-#     datasets.CIFAR10('../data', train=False, transform=transforms.ToTensor()),
-#     batch_size=args.batch_size, shuffle=False, **kwargs)
 
 
 class VAE(nn.Module):
-    def __init__(self):
+    def __init__(self,args):
         super(VAE, self).__init__()
 
         # Encoder
@@ -75,8 +60,8 @@ class VAE(nn.Module):
     def encode(self, x):
         out = self.relu(self.conv1(x))
         out = self.relu(self.conv2(out))
-        out = self.relu(self.conv3(out))
-        out = self.relu(self.conv4(out))
+        # out = self.relu(self.conv3(out))
+        # out = self.relu(self.conv4(out))
         out = out.view(out.size(0), -1)
         h1 = self.relu(self.fc1(out))
         return self.fc21(h1), self.fc22(h1)
@@ -94,8 +79,8 @@ class VAE(nn.Module):
         out = self.relu(self.fc4(h3))
         # import pdb; pdb.set_trace()
         out = out.view(out.size(0), 32, 16, 16)
-        out = self.relu(self.deconv1(out))
-        out = self.relu(self.deconv2(out))
+        # out = self.relu(self.deconv1(out))
+        # out = self.relu(self.deconv2(out))
         out = self.relu(self.deconv3(out))
         out = self.sigmoid(self.conv5(out))
         return out
@@ -106,10 +91,7 @@ class VAE(nn.Module):
         return self.decode(z), mu, logvar
 
 
-# model = VAE()
-# if args.cuda:
-#     model.cuda()
-# optimizer = optim.RMSprop(model.parameters(), lr=1e-3)
+
 
 
 # Reconstruction + KL divergence losses summed over all elements and batch
@@ -169,14 +151,38 @@ def test(epoch):
     test_loss /= len(test_loader.dataset)
     print('====> Test set loss: {:.4f}'.format(test_loss))
 
+if __name__ == '__main__':
 
-# for epoch in range(1, args.epochs + 1):
-#     train(epoch)
-#     test(epoch)
-#     if epoch == args.epochs:
-#         sample = Variable(torch.randn(64, args.hidden_size))
-#         if args.cuda:
-#             sample = sample.cuda()
-#         sample = model.decode(sample).cpu()
-#         save_image(sample.data.view(64, 3, 32, 32),
-#                    '../snapshots/conv_vae/sample_' + str(epoch) + '.png')
+    args = parser.parse_args()
+    args.cuda = not args.no_cuda and torch.cuda.is_available()
+
+    torch.manual_seed(args.seed)
+    if args.cuda:
+        torch.cuda.manual_seed(args.seed)
+
+    kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+
+    train_loader = torch.utils.data.DataLoader(
+        datasets.CIFAR10('../data', train=True, download=True,
+                         transform=transforms.ToTensor()),
+        batch_size=args.batch_size, shuffle=True, **kwargs)
+    test_loader = torch.utils.data.DataLoader(
+        datasets.CIFAR10('../data', train=False, transform=transforms.ToTensor()),
+        batch_size=args.batch_size, shuffle=False, **kwargs)
+
+    model = VAE()
+    if args.cuda:
+        model.cuda()
+    optimizer = optim.RMSprop(model.parameters(), lr=1e-3)
+
+
+    for epoch in range(1, args.epochs + 1):
+        train(epoch)
+        test(epoch)
+        if epoch == args.epochs:
+            sample = Variable(torch.randn(64, args.hidden_size))
+            if args.cuda:
+                sample = sample.cuda()
+            sample = model.decode(sample).cpu()
+            save_image(sample.data.view(64, 3, 32, 32),
+                       '../snapshots/conv_vae/sample_' + str(epoch) + '.png')
