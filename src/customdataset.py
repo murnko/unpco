@@ -26,7 +26,7 @@ class CustomDatasetFromImages(Dataset):
         self.image_arr = np.asarray(self.data_info.iloc[:, 0])
         # Second column contain files names
         self.image_nam = np.asarray(self.data_info.iloc[:, 1])
-        # Third column is for an operation indicator
+        # Third column is for label
         self.label_arr = np.asarray(self.data_info.iloc[:, 2])
         # Additional column can be added if needed
         # Calculate len

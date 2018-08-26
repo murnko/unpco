@@ -1,4 +1,4 @@
-from src.utils import create_raw_data_df_list
+from src.utils import create_raw_data_df_list, create_csv_data
 from src.customdataset import CustomDatasetFromImages
 import torch
 
@@ -6,15 +6,15 @@ import torch
 path_bi_data = 'data/raw_data'
 
 if __name__ == "__main__":
-    df_bi_labeled = create_raw_data_df_list(path_bi_data)
-    print(df_bi_labeled.head())
-    ds_perjeta = CustomDatasetFromImages(df_bi_labeled)
+    df_bi_labeled = create_csv_data(path_bi_data, [2])
+    # print(df_bi_labeled.depth_2.value_counts())
+    ds_herceptin = CustomDatasetFromImages(df_bi_labeled)
 
-    mn_dataset_loader = torch.utils.data.DataLoader(dataset=ds_perjeta,
+    mn_dataset_loader = torch.utils.data.DataLoader(dataset=ds_herceptin,
                                                     batch_size=10,
                                                     shuffle=True)
 
     for images, labels in mn_dataset_loader:
-        pass
+        print(images, labels)
     # print(ds_perjeta.__getitem__(0))
     # print(ds_perjeta.__len__())
