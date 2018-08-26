@@ -31,19 +31,19 @@ args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
 
-torch.manual_seed(args.seed)
-if args.cuda:
-    torch.cuda.manual_seed(args.seed)
-
-
-kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-train_loader = torch.utils.data.DataLoader(
-    datasets.CIFAR10('../data', train=True, download=True,
-                     transform=transforms.ToTensor()),
-    batch_size=args.batch_size, shuffle=True, **kwargs)
-test_loader = torch.utils.data.DataLoader(
-    datasets.CIFAR10('../data', train=False, transform=transforms.ToTensor()),
-    batch_size=args.batch_size, shuffle=False, **kwargs)
+# torch.manual_seed(args.seed)
+# if args.cuda:
+#     torch.cuda.manual_seed(args.seed)
+#
+#
+# kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+# train_loader = torch.utils.data.DataLoader(
+#     datasets.CIFAR10('../data', train=True, download=True,
+#                      transform=transforms.ToTensor()),
+#     batch_size=args.batch_size, shuffle=True, **kwargs)
+# test_loader = torch.utils.data.DataLoader(
+#     datasets.CIFAR10('../data', train=False, transform=transforms.ToTensor()),
+#     batch_size=args.batch_size, shuffle=False, **kwargs)
 
 
 class VAE(nn.Module):
@@ -106,10 +106,10 @@ class VAE(nn.Module):
         return self.decode(z), mu, logvar
 
 
-model = VAE()
-if args.cuda:
-    model.cuda()
-optimizer = optim.RMSprop(model.parameters(), lr=1e-3)
+# model = VAE()
+# if args.cuda:
+#     model.cuda()
+# optimizer = optim.RMSprop(model.parameters(), lr=1e-3)
 
 
 # Reconstruction + KL divergence losses summed over all elements and batch
@@ -170,13 +170,13 @@ def test(epoch):
     print('====> Test set loss: {:.4f}'.format(test_loss))
 
 
-for epoch in range(1, args.epochs + 1):
-    train(epoch)
-    test(epoch)
-    if epoch == args.epochs:
-        sample = Variable(torch.randn(64, args.hidden_size))
-        if args.cuda:
-            sample = sample.cuda()
-        sample = model.decode(sample).cpu()
-        save_image(sample.data.view(64, 3, 32, 32),
-                   '../snapshots/conv_vae/sample_' + str(epoch) + '.png')
+# for epoch in range(1, args.epochs + 1):
+#     train(epoch)
+#     test(epoch)
+#     if epoch == args.epochs:
+#         sample = Variable(torch.randn(64, args.hidden_size))
+#         if args.cuda:
+#             sample = sample.cuda()
+#         sample = model.decode(sample).cpu()
+#         save_image(sample.data.view(64, 3, 32, 32),
+#                    '../snapshots/conv_vae/sample_' + str(epoch) + '.png')
