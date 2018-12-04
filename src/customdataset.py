@@ -1,6 +1,6 @@
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
-from src.utilities.cropper import downsize,crop_center
+from src.one_time_utilities.cropper import img_downsize,img_crop_center
 import pandas as pd
 import numpy as np
 import cv2
