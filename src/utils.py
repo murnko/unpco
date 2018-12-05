@@ -13,7 +13,7 @@ def searching_all_files(directory):
     assert(dirpath.is_dir())
     file_list = []
     for x in dirpath.iterdir():
-        if x.is_file() and '.bmp' in x._str:
+        if x.is_file() and '.jpg' in x._str:
             file_list.append(x) # do not convert posix to string earlier
         elif x.is_dir():
             file_list.extend(searching_all_files(x))

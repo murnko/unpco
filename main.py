@@ -1,6 +1,6 @@
 from src.utils import create_raw_data_df_list, create_csv_data
 from src.customdataset import CustomDatasetFromImages
-from src.one_time_utilities.cropper import crop_top
+# from src.one_time_utilities.cropper import crop_top
 from src.autoencoder import VAE
 import numpy as np
 from torch import optim
@@ -31,14 +31,15 @@ parser.add_argument('--intermediate-size', type=int, default=128, metavar='N',
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 
-path_bi_data = 'data/crop_data_0'
-df_bi_labeled = create_csv_data(path_bi_data, [2])
+path_bi_data = 'data/crop_data_32'
+df_bi_labeled = create_raw_data_df_list(path_bi_data)
+df_bi_labeled['label'] = df_bi_labeled['label'].apply(lambda x: 1 if (x == 99) else 0)
 print(df_bi_labeled.head())
 msk = np.random.rand(len(df_bi_labeled)) < 0.8
 train = df_bi_labeled[msk]
 test = df_bi_labeled[~msk]
-print(train['depth_2'].value_counts())
-print(test['depth_2'].value_counts())
+# print(train['depth_2'].value_counts())
+# print(test['depth_2'].value_counts())
 
 # print(df_bi_labeled.depth_2.value_counts())
 ds_train = CustomDatasetFromImages(train)

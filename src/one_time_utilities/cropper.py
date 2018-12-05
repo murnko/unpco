@@ -4,6 +4,9 @@ from matplotlib import pyplot as plt
 from src.utils import create_raw_data_df_list, create_csv_data
 from tqdm import tqdm
 
+t_new_ref = cv2.imread('data/aux_data/double_corner.png')
+t_new_ref_gray = cv2.cvtColor(t_new_ref, cv2.COLOR_BGR2GRAY)
+
 """crop&save function"""
 def crop_top(df_images):
     for img_row in tqdm(df_images.itertuples()):
@@ -21,6 +24,16 @@ def crop_ref(df_images):
     for img_row in tqdm(df_images.itertuples()):
         path = img_row[1]
         img = cv2.imread(path._str)
+        img_crop = img_crop_ref(img)
+        img_crop32 = img_downsize(img_crop,32)
+        img_crop64 = img_downsize(img_crop,64)
+        img_crop128 = img_downsize(img_crop,128)
+        new_path = '../../data/crop_data_32/' + path._str.split('/')[-1]
+        cv2.imwrite(new_path, img_crop32)
+        new_path = '../../data/crop_data_64/' + path._str.split('/')[-1]
+        cv2.imwrite(new_path, img_crop64)
+        new_path = '../../data/crop_data_128/' + path._str.split('/')[-1]
+        cv2.imwrite(new_path, img_crop128)
 
 
 
@@ -31,16 +44,23 @@ def img_crop_center(img):
     return img[100:400,280:560]
 
 
-def img_downsize(img):
-    return cv2.resize(img, (32,32))
+def img_downsize(img,n):
+    return cv2.resize(img, (n,n))
 
 
 def img_crop_ref(img):
-    t_new_ref = cv2.imread('data/aux_data/double_corner.png')
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    res = cv2.matchTemplate(img_gray, t_new_ref_gray, cv2.TM_CCORR_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+    top_left = max_loc
+    return img[:, top_left[0]:]
+
+
 
 
 
 if __name__ == '__main__':
-    path_bi_data = '../../data/raw_data_0'
-    df_bi_labeled = create_csv_data(path_bi_data, [2])
-    crop_top(df_bi_labeled)
+    path_bi_data = '/Volumes/My Passport/Big_Gut'
+    path_bi_data = '/Users/kamrowsd/Projects/halcon_dev/batch_images'
+    df_bi_labeled = create_raw_data_df_list(path_bi_data)
+    crop_ref(df_bi_labeled)
