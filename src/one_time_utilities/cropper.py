@@ -3,8 +3,9 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from src.utils import create_raw_data_df_list, create_csv_data
 from tqdm import tqdm
+import multiprocessing as mp
 
-t_new_ref = cv2.imread('data/aux_data/double_corner.png')
+t_new_ref = cv2.imread('../../data/aux_data/double_corner.png')
 t_new_ref_gray = cv2.cvtColor(t_new_ref, cv2.COLOR_BGR2GRAY)
 
 """crop&save function"""
@@ -20,20 +21,25 @@ def crop_top(df_images):
         new_path = '../../data/crop_data_0/'+'/'.join(path._str.split('/')[4:])
         cv2.imwrite(new_path,img)
 
-def crop_ref(df_images):
-    for img_row in tqdm(df_images.itertuples()):
-        path = img_row[1]
-        img = cv2.imread(path._str)
+def crop_ref(img_row):
+    # print(img_row)
+    path = img_row[1]
+    try:
+        img = cv2.imread(path)
         img_crop = img_crop_ref(img)
         img_crop32 = img_downsize(img_crop,32)
         img_crop64 = img_downsize(img_crop,64)
         img_crop128 = img_downsize(img_crop,128)
-        new_path = '../../data/crop_data_32/' + path._str.split('/')[-1]
+        new_path = '../../data/crop_data_32/' + path.split('/')[-1]
         cv2.imwrite(new_path, img_crop32)
-        new_path = '../../data/crop_data_64/' + path._str.split('/')[-1]
+        new_path = '../../data/crop_data_64/' + path.split('/')[-1]
         cv2.imwrite(new_path, img_crop64)
-        new_path = '../../data/crop_data_128/' + path._str.split('/')[-1]
+        new_path = '../../data/crop_data_128/' + path.split('/')[-1]
         cv2.imwrite(new_path, img_crop128)
+        return 0
+    except AttributeError:
+        print(img_row)
+        return -1
 
 
 
@@ -57,10 +63,15 @@ def img_crop_ref(img):
 
 
 
-
-
 if __name__ == '__main__':
-    path_bi_data = '/Volumes/My Passport/Big_Gut'
-    path_bi_data = '/Users/kamrowsd/Projects/halcon_dev/batch_images'
+    path_bi_data = '/home/murnko/PycharmProjects/unpco/data/pCO2'
     df_bi_labeled = create_raw_data_df_list(path_bi_data)
-    crop_ref(df_bi_labeled)
+    df_bi_labeled['path_file'] = df_bi_labeled['path_file'].apply(lambda x: x._str)
+    # print(df_bi_labeled['name_file'].value_counts())
+    df_list = [[x[0], x[1], x[2]] for x in df_bi_labeled.itertuples()]
+    pool = mp.Pool(processes=10)
+    results = [pool.apply_async(crop_ref, args=(img_row,)) for img_row in df_list]
+    results = [p.get() for p in results]
+    results.sort()
+    print(max(results))
+    print(min(results))
